@@ -1,16 +1,15 @@
-import board.MyBoard;
-import board.OpponentBoard;
 import board_component.Cell;
 import board_component.Ship;
 import cell_enum.CellStage;
-import ship_enum.ShipName;
 
 import java.util.List;
+import java.util.Random;
 
 public class Player {
     private String name;
-    private MyBoard myBoard;
-    private OpponentBoard opponentBoard;
+    private Board myBoard;
+    private Board opponentBoard;
+
     public String getName() {
         return name;
     }
@@ -30,9 +29,52 @@ public class Player {
     }
 
     public Player(String playerName) {
-        this.myBoard = new MyBoard();
-        this.opponentBoard = new OpponentBoard();
+        this.myBoard = new Board();
+        this.opponentBoard = new Board();
         this.name = playerName;
+        placeShipForMyBoard();
+    }
+
+    private void placeShipForMyBoard() {
+        String[] orientations = {"horizontal", "vertical"};
+        for (Ship ship : myBoard.getShipList()) {
+            placeShip(ship, orientations, myBoard.getCellList());
+        }
+    }
+
+    private static void placeShip(Ship ship, String[] orientations, List<Cell> cellList) {
+        Random rand = new Random();
+        String orientation = orientations[rand.nextInt(2)];
+        int x, y;
+        if (orientation.equalsIgnoreCase("horizontal")) {
+            x = rand.nextInt(10);
+            y = rand.nextInt(10 - ship.getSize());
+        } else {
+            x = rand.nextInt(10 - ship.getSize());
+            y = rand.nextInt(10);
+        }
+        boolean canPlace = true;
+        int positionInList100;
+        for (int i = 0; i < ship.getSize(); i++) {
+            positionInList100 = orientation.equalsIgnoreCase("horizontal")
+                    ? x * 10 + y + i : (i + x) * 10 + y;
+            Cell cell = cellList.get(positionInList100);
+            if (cell.isInAShip()) {
+                canPlace = false;
+                break;
+            }
+        }
+        if (canPlace) {
+            for (int i = 0; i < ship.getSize(); i++) {
+                positionInList100 = orientation.equalsIgnoreCase("horizontal")
+                        ? x * 10 + y + i : (i + x) * 10 + y;
+                Cell cell = cellList.get(positionInList100);
+                cell.setInAShip(true);
+                ship.getCells().add(cell);
+            }
+        } else {
+            placeShip(ship, orientations, cellList);
+        }
     }
     // attack: give cellName, receive result of attack
     // receive attack: update myBoard, send result
@@ -82,19 +124,18 @@ public class Player {
                 .filter(cell -> cell.getName().equalsIgnoreCase(result.getCellName()))
                 .findFirst()
                 .orElseThrow(() -> new Exception(result.getCellName() + " is Invalid!"));
-        List<Ship> shipList = opponentBoard.getShipList();
-        Ship currentShipAttacked = shipList.stream()
-                .filter(ship -> ship.getCells().contains(currentCellAttacked))
-                .findFirst()
-                .orElse(null);
         if (result.getListCellShipSunk() == null) {
             currentCellAttacked.setStage(result.getResult());
         } else {
-            if (currentShipAttacked == null) {
-                throw new Exception(result.getCellName() + " is Invalid!");
-            }
-            currentShipAttacked.setSunk(true);
-            currentCellAttacked.setStage(result.getResult());
+            Ship sunkShip = opponentBoard.getShipList().stream()
+                    .filter(s -> s.getShipName() == result.getSunkShipName())
+                    .findFirst()
+                    .orElseThrow(() -> new Exception(result.getCellName() + " is Invalid!"));
+            sunkShip.setSunk(true);
+            List<Cell> cellOfShipSunk = opponentBoard.getCellList().stream()
+                    .filter(c -> result.getListCellShipSunk().contains(c.getName()))
+                    .toList();
+            sunkShip.getCells().addAll(cellOfShipSunk);
         }
 
     }

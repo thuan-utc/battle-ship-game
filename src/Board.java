@@ -1,5 +1,3 @@
-package board;
-
 import board_component.Cell;
 import board_component.Ship;
 import ship_enum.ShipName;
