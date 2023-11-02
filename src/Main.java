@@ -5,6 +5,7 @@ public class Main {
         player1.printOpponentBoard();
         Player player2 = new Player("player2");
         AttackResult attackResult = player2.receiveAttack("A1");
-
+        player1.updateOpponentBoard(attackResult);
+        player1.printOpponentBoard();
     }
 }

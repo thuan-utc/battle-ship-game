@@ -139,4 +139,15 @@ public class Player {
         }
 
     }
+
+    public boolean isLooser() {
+        boolean isLooser = true;
+        for (Ship ship : myBoard.getShipList()) {
+            if (!ship.isSunk()) {
+                isLooser = false;
+                break;
+            }
+        }
+        return isLooser;
+    }
 }
