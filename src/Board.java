@@ -25,7 +25,7 @@ public class Board {
 
     private void initialCells() {
         cellList = new ArrayList<>(100);
-        String[] columns = {"A", "B", "C", "D", "E", "F", "F", "H", "I", "J"};
+        String[] columns = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
         String[] rows = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
         String color = "white";
         for (String row : rows) {

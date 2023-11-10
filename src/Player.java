@@ -109,27 +109,28 @@ public class Player {
                 .findFirst()
                 .orElse(null);
         if (currentShipAttacked != null) {
-            boolean isNotSunk = false;
+            attackResult.setResult(CellStage.HIT_SUCCESS);
+            currentCellAttacked.setStage(CellStage.HIT_SUCCESS);
+            boolean isSunk = true;
             for (Cell cellOfCurrentShip : currentShipAttacked.getCells()) {
                 if (cellOfCurrentShip.getStage() == CellStage.NOT_HIT) {
-                    isNotSunk = true;
+                    isSunk = false;
                     break;
                 }
             }
-            if (isNotSunk) {
-                attackResult.setResult(CellStage.HIT_SUCCESS);
-            } else {
+            if (isSunk) {
                 for (Cell cellOfCurrentShip : currentShipAttacked.getCells()) {
-                    if (cellOfCurrentShip.getStage() == CellStage.NOT_HIT) {
-                        cellOfCurrentShip.setStage(CellStage.IN_SHIP_SUNK);
-                    }
+                    cellOfCurrentShip.setStage(CellStage.IN_SHIP_SUNK);
                 }
+                currentShipAttacked.setSunk(true);
                 attackResult.setResult(CellStage.IN_SHIP_SUNK);
+                attackResult.setSunkShipName(currentShipAttacked.getShipName());
                 List<String> cellNameOfShipSunks = currentShipAttacked.getCells().stream().map(Cell::getName).toList();
                 attackResult.setListCellShipSunk(cellNameOfShipSunks);
             }
         } else {
             attackResult.setResult(CellStage.HIT_FAILED);
+            currentCellAttacked.setStage(CellStage.HIT_FAILED);
         }
         return attackResult;
     }

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class Bot extends Player {
+public class Bot extends Player { // do thám tìm vị trí tàu và đánh chìm
     // attack only white or Black
     public static boolean attackWhite = true; // target parity
 
@@ -34,15 +34,15 @@ public class Bot extends Player {
 
     private static void increaseProbability(Board board, String cellName) {
         char columnName = cellName.charAt(0);
-        Character rowName = cellName.charAt(1);
+        String rowName = cellName.substring(1);
         int row, columnn;
-        row = Integer.parseInt(String.valueOf(rowName)) - 1;
+        row = Integer.parseInt(rowName) - 1;
         columnn = (int) columnName - (int) 'A';
         int positionInList100;
         Cell cell;
         //update up
         positionInList100 = (row - 1) * 10 + columnn;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row - 1, columnn)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
@@ -50,7 +50,7 @@ public class Bot extends Player {
         }
         //update down
         positionInList100 = (row + 1) * 10 + columnn;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row + 1, columnn)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
@@ -58,7 +58,7 @@ public class Bot extends Player {
         }
         //update left
         positionInList100 = row * 10 + columnn - 1;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row, columnn - 1)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
@@ -66,7 +66,7 @@ public class Bot extends Player {
         }
         //update right
         positionInList100 = row * 10 + columnn + 1;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row, columnn + 1)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
@@ -74,17 +74,29 @@ public class Bot extends Player {
         }
     }
 
+    private static boolean isValidPosition(int row, int column) {
+        return isValidRow(row) && isValidColumn(column);
+    }
+
+    private static boolean isValidColumn(int column) {
+        return 0 <= column && column <= 9;
+    }
+
+    private static boolean isValidRow(int row) { // start from 0
+        return 0 <= row && row <= 9;
+    }
+
     private static void decreaseProbability(Board board, String cellName) {
         char columnName = cellName.charAt(0);
-        Character rowName = cellName.charAt(1);
+        String rowName = cellName.substring(1);
         int row, column;
-        row = Integer.parseInt(String.valueOf(rowName)) - 1;
+        row = Integer.parseInt(rowName) - 1;
         column = (int) columnName - (int) 'A';
         int positionInList100;
         Cell cell;
         //update up
         positionInList100 = (row - 1) * 10 + column;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row - 1, column)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
@@ -92,7 +104,7 @@ public class Bot extends Player {
         }
         //update down
         positionInList100 = (row + 1) * 10 + column;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row + 1, column)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
@@ -100,7 +112,7 @@ public class Bot extends Player {
         }
         //update left
         positionInList100 = row * 10 + column - 1;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row, column - 1)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
@@ -108,7 +120,7 @@ public class Bot extends Player {
         }
         //update right
         positionInList100 = row * 10 + column + 1;
-        if (positionInList100 < 100 && positionInList100 >= 0) {
+        if (isValidPosition(row, column + 1)) {
             cell = board.getCellList().get(positionInList100);
             if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
                 cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
@@ -121,7 +133,7 @@ public class Bot extends Player {
         int maxProb = 0;
         List<Cell> cellList = board.getCellList();
         for (Cell cell : cellList) {
-            if (cell.getProbabilityContainsShip() > maxProb) {
+            if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > maxProb) {
                 maxProb = cell.getProbabilityContainsShip();
                 attackRandom = false;
             }
@@ -129,21 +141,29 @@ public class Bot extends Player {
         List<Cell> selectedCells;
         Random random = new Random();
         if (attackRandom) {
-            if (attackWhite) {
-                selectedCells = cellList.stream()
-                        .filter(c -> c.getColor().equalsIgnoreCase("white") && c.getStage() == CellStage.NOT_HIT)
-                        .toList();
-            } else {
-                selectedCells = cellList.stream()
-                        .filter(c -> c.getColor().equalsIgnoreCase("black") && c.getStage() == CellStage.NOT_HIT)
-                        .toList();
+            String colorAttack = getColorAttack();
+            selectedCells = getAllCellsNotHitWithColor(cellList, colorAttack);
+            if (selectedCells.isEmpty()) {
+                attackWhite = !attackWhite;
+                colorAttack = getColorAttack();
+                selectedCells = getAllCellsNotHitWithColor(cellList, colorAttack);
             }
         } else {
             int finalMaxProb = maxProb;
             selectedCells = cellList.stream()
-                    .filter(c -> c.getProbabilityContainsShip() == finalMaxProb)
+                    .filter(c -> c.getProbabilityContainsShip() == finalMaxProb && c.getStage() == CellStage.NOT_HIT)
                     .collect(Collectors.toList());
         }
         return selectedCells.get(random.nextInt(selectedCells.size())).getName();
+    }
+
+    private static String getColorAttack() {
+        return attackWhite ? "white" : "black";
+    }
+
+    private static List<Cell> getAllCellsNotHitWithColor(List<Cell> cellList, String colorAttack) {
+        return cellList.stream()
+                .filter(c -> c.getColor().equalsIgnoreCase(colorAttack) && c.getStage() == CellStage.NOT_HIT)
+                .toList();
     }
 }

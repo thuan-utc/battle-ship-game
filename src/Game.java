@@ -26,20 +26,27 @@ public class Game {
     }
 
     public boolean isGameEnd() {
-        return player1.isLooser() || player2.isLooser();
+        boolean endGame = player1.isLooser() || player2.isLooser();
+        if (player1.isLooser()) {
+            System.out.printf(player2.getName() + " win!\n");
+        } else if (player2.isLooser()) {
+            System.out.printf(player1.getName() + " win!\n");
+        }
+        return endGame;
     }
 
     public void start() throws Exception {
-        Scanner scanner = new Scanner(System.in);
+//        Scanner scanner = new Scanner(System.in);
         boolean player1Turn = true;
         int numberTurn = 1;
         while (!isGameEnd()) {
             if (player1Turn) {
-                System.out.println("Turn: " + numberTurn);
-                player1.printOpponentBoardWithProbabilityContainShip();
-                AttackResult result = player2.receiveAttack(Bot.findNextAttack(player1.getOpponentBoard()));
+                String nextAttackPoint = Bot.findNextAttack(player1.getOpponentBoard());
+                System.out.printf("Turn: %d, attackPoint: %s\n", numberTurn++, nextAttackPoint);
+                AttackResult result = player2.receiveAttack(nextAttackPoint);
                 player1.updateOpponentBoard(result);
                 Bot.updateBoardProbability(player1.getOpponentBoard(), result);
+                player1.printOpponentBoardWithProbabilityContainShip();
             } else {
 //                player2.printOpponentBoardWithProbabilityContainShip();
                 AttackResult result = player1.receiveAttack(Bot.findNextAttack(player2.getOpponentBoard()));
@@ -47,5 +54,6 @@ public class Game {
             }
             player1Turn = !player1Turn;
         }
+        System.out.println("Game end!");
     }
 }
