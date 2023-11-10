@@ -16,11 +16,23 @@ public class Cell {
 
     @Override
     public String toString() {
-        return inAShip ? "+" : "0";
+        return name;
     }
 
     public String printCellState() {
         return stage == CellStage.NOT_HIT ? "0"
+                : stage == CellStage.HIT_FAILED ? "x"
+                : stage == CellStage.HIT_SUCCESS ? "+"
+                : stage == CellStage.IN_SHIP_SUNK ? "*"
+                : "";
+    }
+
+    public String printShip() {
+        return inAShip ? "+" : "0";
+    }
+
+    public String printProbabilityContainShip() {
+        return stage == CellStage.NOT_HIT ? String.valueOf(probabilityContainsShip)
                 : stage == CellStage.HIT_FAILED ? "x"
                 : stage == CellStage.HIT_SUCCESS ? "+"
                 : stage == CellStage.IN_SHIP_SUNK ? "*"

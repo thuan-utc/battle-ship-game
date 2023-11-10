@@ -51,7 +51,7 @@ public class Board {
         for (int i = 0; i < 10; i++) {
             System.out.printf("%-3d", ++rowIndex);
             for (int j = 0; j < 10; j++) {
-                System.out.printf("%-2s", getCellList().get(i * 10 + j).toString());
+                System.out.printf("%-2s", getCellList().get(i * 10 + j).printShip());
             }
             System.out.println();
         }
@@ -72,6 +72,37 @@ public class Board {
             }
             System.out.println();
         }
+    }
+
+    public void printCellWithProbabilityContainShip() {
+        int rowIndex = 0;
+        String[] columns = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+        System.out.print("   ");
+        for (String column : columns) {
+            System.out.printf("%-2s", column);
+        }
+        System.out.println();
+        for (int i = 0; i < 10; i++) {
+            System.out.printf("%-3d", ++rowIndex);
+            for (int j = 0; j < 10; j++) {
+                System.out.printf("%-2s", getCellList().get(i * 10 + j).printProbabilityContainShip());
+            }
+            System.out.println();
+        }
+    }
+
+    public Cell findCellByName(String cellName) throws Exception {
+        return cellList.stream()
+                .filter(cell -> cell.getName().equalsIgnoreCase(cellName))
+                .findFirst()
+                .orElseThrow(() -> new Exception(cellName + " is Invalid!"));
+    }
+
+    public Ship findShipByName(ShipName shipName) throws Exception {
+        return shipList.stream()
+                .filter(ship -> ship.getShipName() == shipName)
+                .findFirst()
+                .orElseThrow(() -> new Exception(shipName + " is Invalid!"));
     }
 
     public List<Cell> getCellList() {

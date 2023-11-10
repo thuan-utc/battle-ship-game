@@ -18,6 +18,22 @@ public class Player {
         this.name = name;
     }
 
+    public Board getMyBoard() {
+        return myBoard;
+    }
+
+    public void setMyBoard(Board myBoard) {
+        this.myBoard = myBoard;
+    }
+
+    public Board getOpponentBoard() {
+        return opponentBoard;
+    }
+
+    public void setOpponentBoard(Board opponentBoard) {
+        this.opponentBoard = opponentBoard;
+    }
+
     public void printMyBoard() {
         System.out.printf(name + "\n");
         myBoard.printShipPosition();
@@ -26,6 +42,10 @@ public class Player {
     public void printOpponentBoard() {
         System.out.print("machine" + "\n");
         opponentBoard.printCellStage();
+    }
+
+    public void printOpponentBoardWithProbabilityContainShip() {
+        opponentBoard.printCellWithProbabilityContainShip();
     }
 
     public Player(String playerName) {
@@ -81,11 +101,7 @@ public class Player {
 
     public AttackResult receiveAttack(String cellName) throws Exception {
         AttackResult attackResult = new AttackResult();
-        List<Cell> cellList = myBoard.getCellList();
-        Cell currentCellAttacked = cellList.stream()
-                .filter(cell -> cell.getName().equalsIgnoreCase(cellName))
-                .findFirst()
-                .orElseThrow(() -> new Exception(cellName + " is Invalid!"));
+        Cell currentCellAttacked = myBoard.findCellByName(cellName);
         attackResult.setCellName(cellName);
         List<Ship> shipList = myBoard.getShipList();
         Ship currentShipAttacked = shipList.stream()
@@ -119,22 +135,16 @@ public class Player {
     }
 
     public void updateOpponentBoard(AttackResult result) throws Exception {
-        List<Cell> cellList = opponentBoard.getCellList();
-        Cell currentCellAttacked = cellList.stream()
-                .filter(cell -> cell.getName().equalsIgnoreCase(result.getCellName()))
-                .findFirst()
-                .orElseThrow(() -> new Exception(result.getCellName() + " is Invalid!"));
+        Cell currentCellAttacked = opponentBoard.findCellByName(result.getCellName());
         if (result.getListCellShipSunk() == null) {
             currentCellAttacked.setStage(result.getResult());
         } else {
-            Ship sunkShip = opponentBoard.getShipList().stream()
-                    .filter(s -> s.getShipName() == result.getSunkShipName())
-                    .findFirst()
-                    .orElseThrow(() -> new Exception(result.getCellName() + " is Invalid!"));
+            Ship sunkShip = opponentBoard.findShipByName(result.getSunkShipName());
             sunkShip.setSunk(true);
             List<Cell> cellOfShipSunk = opponentBoard.getCellList().stream()
                     .filter(c -> result.getListCellShipSunk().contains(c.getName()))
                     .toList();
+            cellOfShipSunk.forEach(c -> c.setStage(CellStage.IN_SHIP_SUNK));
             sunkShip.getCells().addAll(cellOfShipSunk);
         }
 
