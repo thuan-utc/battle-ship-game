@@ -42,14 +42,15 @@ public class Game {
         while (!isGameEnd()) {
             if (player1Turn) {
                 String nextAttackPoint = Bot.findNextAttack(player1.getOpponentBoard());
-                System.out.printf("Turn: %d, attackPoint: %s\n", numberTurn++, nextAttackPoint);
                 AttackResult result = player2.receiveAttack(nextAttackPoint);
                 player1.updateOpponentBoard(result);
                 Bot.updateBoardProbability(player1.getOpponentBoard(), result);
+                System.out.printf("Turn: %d, attackPoint: %s, result: %s\n", numberTurn++, nextAttackPoint, result.getResult());
                 player1.printOpponentBoardWithProbabilityContainShip();
             } else {
 //                player2.printOpponentBoardWithProbabilityContainShip();
                 AttackResult result = player1.receiveAttack(Bot.findNextAttack(player2.getOpponentBoard()));
+                Bot.updateBoardProbability(player2.getOpponentBoard(), result);
                 player2.updateOpponentBoard(result);
             }
             player1Turn = !player1Turn;

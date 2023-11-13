@@ -1,13 +1,21 @@
 import board_component.Cell;
+import board_component.Ship;
 import cell_enum.CellStage;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class Bot extends Player { // do thám tìm vị trí tàu và đánh chìm
-    // attack only white or Black
-    public static boolean attackWhite = true; // target parity
+/**
+ * do thám tìm vị trí tàu và đánh chìm
+ */
+public class Bot extends Player {
+    /**
+     * attack only white or Black
+     */
+    public static boolean attackWhite = true;
+    private final static int boardSize = 10;
 
     public Bot(String playerName) {
         super(playerName);
@@ -21,55 +29,129 @@ public class Bot extends Player { // do thám tìm vị trí tàu và đánh ch�
         lastAttack.setStage(result.getResult());
         if (result.getSunkShipName() == null) {
             if (lastAttack.getStage() == CellStage.HIT_SUCCESS) {
-                // tăng chỉ số khả năng chứa tàu của 4 ô kề cùng hàng, cột //hunting
+                /* tăng chỉ số khả năng chứa tàu của 4 ô kề cùng hàng, cột -> hunting */
                 String cellName = lastAttack.getName();
-                increaseProbability(board, cellName);
+                increaseProbabilityAround(board, cellName);
+                /*nếu có 2 điểm kề nhau bắn trúng trở lên, tăng khả năng theo hướng cột hoặc hàng*/
+                increaseProbabilityByDirection(board, cellName);
+
             }
         } else {
-            // liệt kê ra các cell thuộc tàu đã chìm, các cell xung quoanh nếu lớn hown 0 và chưa bị bắn phải giảm đi 1
+            // liệt kê ra các cell thuộc tàu đã chìm, các cell xung quanh nếu lớn hơn 0 và chưa bị bắn phải giảm đi 1
+            //todo issue: chỉ được giảm các ô mà do tàu này làm tăng khả năng
             result.getListCellShipSunk().forEach(currentCellName -> decreaseProbability(board, currentCellName));
         }
-        // ccần implement đánh từ giữa ra, tìm cacs vùng có khả năng chứa tàu lớn nhất chưa chìm
+        // implement đánh từ giữa ra, tìm các vùng có khả năng chứa tàu lớn nhất chưa chìm
+         List<Ship> unSunkShip = board.getShipList().stream()
+                .filter(ship -> !ship.isSunk()).toList();
+
+        // theo row
+        int maxUnSunkShipLength = unSunkShip.stream().map(Ship::getSize).max(Comparator.naturalOrder()).orElse(0);
+        for (int i = 0; i < boardSize; i++) {
+            int positionInList100ByRow;
+            int positionInList100ByColumn;
+            for (int j = 0; j < boardSize; j++) {
+
+            }
+        }
     }
 
-    private static void increaseProbability(Board board, String cellName) {
-        char columnName = cellName.charAt(0);
-        String rowName = cellName.substring(1);
-        int row, columnn;
-        row = Integer.parseInt(rowName) - 1;
-        columnn = (int) columnName - (int) 'A';
-        int positionInList100;
+    private static void increaseProbabilityByDirection(Board board, String cellName) {
+        Coordinates result = getCoordinates(cellName);
+        int row = result.row();
+        int column = result.column();
         Cell cell;
         //update up
-        positionInList100 = (row - 1) * 10 + columnn;
-        if (isValidPosition(row - 1, columnn)) {
+        int positionInList100 = (row - 1) * boardSize + column;
+        if (isValidPosition(row - 1, column)) {
             cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
+            if (cell.getStage() == CellStage.HIT_SUCCESS) {
+                // ô hiện tại và trên nó đã bắn trúng -> tìm ô ở dưới và trên của cụm ô hiện tại
+                updateCellDown(board, row, column, 1);// ô dưới ô hiện tại
+                updateCellUp(board, row - 1, column, 1); // ô trên của ô trên cùng
             }
         }
         //update down
-        positionInList100 = (row + 1) * 10 + columnn;
-        if (isValidPosition(row + 1, columnn)) {
+        positionInList100 = (row + 1) * boardSize + column;
+        if (isValidPosition(row + 1, column)) {
             cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
+            if (cell.getStage() == CellStage.HIT_SUCCESS) {
+                // ô hiện tại và dưới nó đã bắn trúng -> tìm dưới và trên của cụm ô hiện tại
+                updateCellUp(board, row, column, 1);
+                updateCellDown(board, row + 1, column, 1);
             }
         }
         //update left
-        positionInList100 = row * 10 + columnn - 1;
-        if (isValidPosition(row, columnn - 1)) {
+        positionInList100 = row * boardSize + column - 1;
+        if (isValidPosition(row, column - 1)) {
             cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
+            if (cell.getStage() == CellStage.HIT_SUCCESS) {
+                // ô hiện tại và bên trái nó đã bắn trúng -> tìm ô ở bên phải và trái của cụm ô hiện tại
+                updateCellRight(board, row, column, 1);
+                updateCellLeft(board, row, column - 1, 1);
             }
         }
         //update right
-        positionInList100 = row * 10 + columnn + 1;
-        if (isValidPosition(row, columnn + 1)) {
+        positionInList100 = row * boardSize + column + 1;
+        if (isValidPosition(row, column + 1)) {
             cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() + 1);
+            if (cell.getStage() == CellStage.HIT_SUCCESS) {
+                // ô hiện tại và bên phải nó đã bắn trúng -> tìm ô ở bên trái
+                updateCellLeft(board, row, column, 1);
+                updateCellRight(board, row, column + 1, 1);
+            }
+        }
+    }
+
+    private static void increaseProbabilityAround(Board board, String cellName) {
+        Coordinates result = getCoordinates(cellName);
+        //update up
+        updateCellUp(board, result.row(), result.column(), 1);
+        //update down
+        updateCellDown(board, result.row(), result.column(), 1);
+        //update left
+        updateCellLeft(board, result.row(), result.column(), 1);
+        //update right
+        updateCellRight(board, result.row(), result.column(), 1);
+    }
+
+    private static void updateCellUp(Board board, int row, int column, int value) {
+        int positionInList100;
+        positionInList100 = (row - 1) * boardSize + column;
+        if (isValidPosition(row - 1, column)) {
+            updateValidCell(board, positionInList100, value);
+        }
+    }
+
+    private static void updateCellDown(Board board, int row, int column, int value) {
+        int positionInList100;
+        positionInList100 = (row + value) * boardSize + column;
+        if (isValidPosition(row + value, column)) {
+            updateValidCell(board, positionInList100, value);
+        }
+    }
+
+    private static void updateCellRight(Board board, int row, int column, int value) {
+        int positionInList100;
+        positionInList100 = row * boardSize + column + 1;
+        if (isValidPosition(row, column + 1)) {
+            updateValidCell(board, positionInList100, value);
+        }
+    }
+
+    private static void updateCellLeft(Board board, int row, int column, int value) {
+        int positionInList100 = row * boardSize + column - 1;
+        if (isValidPosition(row, column - 1)) {
+            updateValidCell(board, positionInList100, value);
+        }
+    }
+
+    private static void updateValidCell(Board board, int positionInList100, int value) {
+        Cell cell = board.getCellList().get(positionInList100);
+        if (cell.getStage() == CellStage.NOT_HIT) {
+            int newValue = cell.getProbabilityContainsShip() + value;
+            if (newValue >= 0) {
+                cell.setProbabilityContainsShip(newValue);
             }
         }
     }
@@ -87,45 +169,27 @@ public class Bot extends Player { // do thám tìm vị trí tàu và đánh ch�
     }
 
     private static void decreaseProbability(Board board, String cellName) {
+        Coordinates result = getCoordinates(cellName);
+        //update up
+        updateCellUp(board, result.row(), result.column(), -1);
+        //update down
+        updateCellDown(board, result.row(), result.column(), -1);
+        //update left
+        updateCellLeft(board, result.row(), result.column(), -1);
+        //update right
+        updateCellRight(board, result.row(), result.column(), -1);
+    }
+
+    private static Coordinates getCoordinates(String cellName) {
+        int column, row;
         char columnName = cellName.charAt(0);
         String rowName = cellName.substring(1);
-        int row, column;
         row = Integer.parseInt(rowName) - 1;
         column = (int) columnName - (int) 'A';
-        int positionInList100;
-        Cell cell;
-        //update up
-        positionInList100 = (row - 1) * 10 + column;
-        if (isValidPosition(row - 1, column)) {
-            cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
-            }
-        }
-        //update down
-        positionInList100 = (row + 1) * 10 + column;
-        if (isValidPosition(row + 1, column)) {
-            cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
-            }
-        }
-        //update left
-        positionInList100 = row * 10 + column - 1;
-        if (isValidPosition(row, column - 1)) {
-            cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
-            }
-        }
-        //update right
-        positionInList100 = row * 10 + column + 1;
-        if (isValidPosition(row, column + 1)) {
-            cell = board.getCellList().get(positionInList100);
-            if (cell.getStage() == CellStage.NOT_HIT && cell.getProbabilityContainsShip() > 0) {
-                cell.setProbabilityContainsShip(cell.getProbabilityContainsShip() - 1);
-            }
-        }
+        return new Coordinates(row, column);
+    }
+
+    private record Coordinates(Integer row, Integer column) {
     }
 
     public static String findNextAttack(Board board) {

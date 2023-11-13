@@ -8,6 +8,7 @@ import java.util.List;
 public class Board {
     private List<Cell> cellList;
     private List<Ship> shipList;
+    private final static int boardSize = 10;
 
     public Board() {
         initialCells();
@@ -48,10 +49,10 @@ public class Board {
             System.out.printf("%-2s", column);
         }
         System.out.println();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < boardSize; i++) {
             System.out.printf("%-3d", ++rowIndex);
-            for (int j = 0; j < 10; j++) {
-                System.out.printf("%-2s", getCellList().get(i * 10 + j).printShip());
+            for (int j = 0; j < boardSize; j++) {
+                System.out.printf("%-2s", getCellList().get(i * boardSize + j).printShip());
             }
             System.out.println();
         }
@@ -65,10 +66,10 @@ public class Board {
             System.out.printf("%-2s", column);
         }
         System.out.println();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < boardSize; i++) {
             System.out.printf("%-3d", ++rowIndex);
-            for (int j = 0; j < 10; j++) {
-                System.out.printf("%-2s", getCellList().get(i * 10 + j).printCellState());
+            for (int j = 0; j < boardSize; j++) {
+                System.out.printf("%-2s", getCellList().get(i * boardSize + j).printCellState());
             }
             System.out.println();
         }
@@ -82,10 +83,10 @@ public class Board {
             System.out.printf("%-2s", column);
         }
         System.out.println();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < boardSize; i++) {
             System.out.printf("%-3d", ++rowIndex);
-            for (int j = 0; j < 10; j++) {
-                System.out.printf("%-2s", getCellList().get(i * 10 + j).printProbabilityContainShip());
+            for (int j = 0; j < boardSize; j++) {
+                System.out.printf("%-2s", getCellList().get(i * boardSize + j).printProbabilityContainShip());
             }
             System.out.println();
         }
