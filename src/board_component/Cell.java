@@ -39,6 +39,10 @@ public class Cell {
                 : "";
     }
 
+    public String printColor() {
+        return color.equalsIgnoreCase("white") ? "0" : "1";
+    }
+
     public String getColor() {
         return color;
     }

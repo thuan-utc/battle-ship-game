@@ -48,6 +48,10 @@ public class Player {
         opponentBoard.printCellWithProbabilityContainShip();
     }
 
+    public void printOpponentBoardWithColor() {
+        opponentBoard.printCellWithColor();
+    }
+
     public Player(String playerName) {
         this.myBoard = new Board();
         this.opponentBoard = new Board();

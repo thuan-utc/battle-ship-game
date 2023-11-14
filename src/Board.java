@@ -29,7 +29,9 @@ public class Board {
         String[] columns = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
         String[] rows = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
         String color = "white";
+        boolean firstIsWhite = true;
         for (String row : rows) {
+            color = firstIsWhite ? "white" : "black";
             for (String col : columns) {
                 Cell cell = new Cell();
                 String cellName = col + row;
@@ -38,6 +40,7 @@ public class Board {
                 color = color.equalsIgnoreCase("white") ? "black" : "white";
                 cellList.add(cell);
             }
+            firstIsWhite = ! firstIsWhite;
         }
     }
 
@@ -87,6 +90,23 @@ public class Board {
             System.out.printf("%-3d", ++rowIndex);
             for (int j = 0; j < boardSize; j++) {
                 System.out.printf("%-2s", getCellList().get(i * boardSize + j).printProbabilityContainShip());
+            }
+            System.out.println();
+        }
+    }
+
+    public void printCellWithColor() {
+        int rowIndex = 0;
+        String[] columns = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"};
+        System.out.print("   ");
+        for (String column : columns) {
+            System.out.printf("%-2s", column);
+        }
+        System.out.println();
+        for (int i = 0; i < boardSize; i++) {
+            System.out.printf("%-3d", ++rowIndex);
+            for (int j = 0; j < boardSize; j++) {
+                System.out.printf("%-2s", getCellList().get(i * boardSize + j).printColor());
             }
             System.out.println();
         }

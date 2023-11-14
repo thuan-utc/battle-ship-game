@@ -40,9 +40,39 @@ public class Bot extends Player {
             // liệt kê ra các cell thuộc tàu đã chìm, các cell xung quanh nếu lớn hơn 0 và chưa bị bắn phải giảm đi 1
             //todo issue: chỉ được giảm các ô mà do tàu này làm tăng khả năng
             result.getListCellShipSunk().forEach(currentCellName -> decreaseProbability(board, currentCellName));
+            // tăng bù lại cho các ô bị giảm sai
+            board.getCellList().forEach(cell -> {
+                if (cell.getStage() == CellStage.HIT_SUCCESS) {
+                    Coordinates coordinates = getCoordinates(cell.getName());
+                    if (isValidPosition(coordinates.row - 1, coordinates.column)) {
+                        Cell cellUp = board.getCellList().get((coordinates.row - 1) * boardSize + coordinates.column);
+                        if (cellUp.getStage() == CellStage.NOT_HIT && cellUp.getProbabilityContainsShip() == 0) {
+                            cellUp.setProbabilityContainsShip(1);
+                        }
+                    }
+                    if (isValidPosition(coordinates.row + 1, coordinates.column)) {
+                        Cell cellDown = board.getCellList().get((coordinates.row + 1) * boardSize + coordinates.column);
+                        if (cellDown.getStage() == CellStage.NOT_HIT && cellDown.getProbabilityContainsShip() == 0) {
+                            cellDown.setProbabilityContainsShip(1);
+                        }
+                    }
+                    if (isValidPosition(coordinates.row, coordinates.column - 1)) {
+                        Cell cellLeft = board.getCellList().get(coordinates.row * boardSize + coordinates.column - 1);
+                        if (cellLeft.getStage() == CellStage.NOT_HIT && cellLeft.getProbabilityContainsShip() == 0) {
+                            cellLeft.setProbabilityContainsShip(1);
+                        }
+                    }
+                    if (isValidPosition(coordinates.row, coordinates.column + 1)) {
+                        Cell cellRight = board.getCellList().get(coordinates.row * boardSize + coordinates.column + 1);
+                        if (cellRight.getStage() == CellStage.NOT_HIT && cellRight.getProbabilityContainsShip() == 0) {
+                            cellRight.setProbabilityContainsShip(1);
+                        }
+                    }
+                }
+            });
         }
         // implement đánh từ giữa ra, tìm các vùng có khả năng chứa tàu lớn nhất chưa chìm
-         List<Ship> unSunkShip = board.getShipList().stream()
+        List<Ship> unSunkShip = board.getShipList().stream()
                 .filter(ship -> !ship.isSunk()).toList();
 
         // theo row
